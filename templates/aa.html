@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Flask App</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- Highcharts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <style>
+            .dialog {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 500px;
+          background-color: red;
+          color: white;
+          padding: 20px;
+          display: none;
+          text-align: center;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+          z-index: 9999;
+        }
+
+        .dialog h2 {
+          font-size: 24px;
+          margin-top: 0;
+        }
+
+        .dialog p {
+          font-size: 18px;
+          margin-bottom: 20px;
+        }
+
+        #closeButton {
+          background-color: white;
+          color: red;
+          border: none;
+          padding: 10px 20px;
+          font-size: 16px;
+          cursor: pointer;
+        }
+
+        .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 17px;
+      }
+  
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+  
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .3s;
+        transition: .3s;
+      }
+  
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 13px;
+        width: 13px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+  
+      input:checked+.slider {
+        background-color: #2196F3;
+      }
+  
+      input:focus+.slider {
+        box-shadow: 0 0 1px #2196F3;
+      }
+  
+      input:checked+.slider:before {
+        -webkit-transform: translateX(13px);
+        -ms-transform: translateX(13px);
+        transform: translateX(13px);
+      }
+  
+      /* Rounded sliders */
+      .slider.round {
+        border-radius: 17px;
+      }
+  
+      .slider.round:before {
+        border-radius: 50%;
+      }
+      .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+            justify-content: flex-end;
+        }
+
+        .toggle-container .switch {
+            margin-left: 10px;
+        }
+
+        .toggle-container .slider {
+            background-color: #ebe9e9b0;
+        }
+
+        .toggle-container .slider:before {
+            background-color: white;
+        }
+
+        .toggle-container input:checked + .slider {
+            background-color: #d1d1f8ea;
+        }
+
+        .toggle-container input:focus + .slider {
+            box-shadow: 0 0 1px #d1d1f8ea;
+        }
+
+        .toggle-container input:checked + .slider:before {
+            -webkit-transform: translateX(13px);
+            -ms-transform: translateX(13px);
+            transform: translateX(13px);
+        }
+
+        /* Rounded sliders */
+        .toggle-container .slider.round {
+            border-radius: 17px;
+        }
+
+        .toggle-container .slider.round:before {
+            border-radius: 50%;
+        }
+  
+        body {
+                background-color: #e6e6fab2;
+            }
+        .chart-container {
+            height: 100%;
+        }
+
+        .card {
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .chart1height {
+            height: 520px;
+        }
+
+        .height {
+            height: 250px;
+        }
+        .chart2height {
+            height: 380px;
+        }
+    </style>
+
+</head>
+
+<body>
+  <div id="dialog" class="dialog">
+    <h2 id="dialogTitle">Danger!</h2>
+    <p id="dialogText">There is a critical situation.</p>
+    <button id="closeButton">Close</button>
+  </div>
+    <div class="container-fluid mt-3">
+        <div class="row wrapper">
+            <div class="col-6">
+                    <div class="card chart1height">
+                        <div class="card-body ">
+                            <div class="toggle-container">
+                                <label class="switch pb-0">
+                                    <input type="checkbox" onclick="toggleSwitch()">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div id="chart-container1" class="chart-container"></div>
+                        </div>
+                    </div>
+            </div>
+            <div class="col-6">
+                <div class="row">
+                    <div class="col-12">
+                            <div class="card height">
+                                <div class="card-body py-0">
+                                    <div id="chart-container2" class="chart-container" ></div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="col-12">
+                            <div class="card height">
+                                <div class="card-body py-0">
+                                    <div id="chart-container3" class="chart-container" ></div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row wrapper">
+            <div class="col-6">
+                <div class="card chart2height">
+                    <div class="card-body ">
+                        <div class="toggle-container">
+                            <label class="switch pb-0">
+                                <input type="checkbox" onclick="fireToggleSwitch()" id = "fire">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div id="chart-container4" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card chart2height">
+                    <div class="card-body ">
+                        <div class="toggle-container">
+                            <label class="switch pb-0">
+                                <input type="checkbox" onclick="stormToggleSwitch(event)" id = "storm">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div id="chart-container5" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var chart1, chart2, chart3;
+        function toggleSwitch() {
+          if ($('input[type="checkbox"]').prop('checked')) {
+            $.ajax({
+              url: "/changeEqFile",
+              type: "POST",
+              data: {
+                int_prop: 1 
+              }
+            });
+
+            dialogTitle.innerText = 'Urgent Notice!';
+            dialogText.innerText = 'Earthquake predicted in the data center area! \nBackup in progress, system shutdown initiated, and data transfer to alternate location underway.\n Take immediate precautions.';
+            dialog.style.display = 'block';
+          } else {
+            $.ajax({
+              url: "/changeEqFile",
+              type: "POST",
+              data: {
+                int_prop: 0 
+              }
+            });
+             dialog.style.display = 'none';
+          }
+        };
+        const dialog = document.getElementById('dialog');
+
+// Get the close button
+const closeButton = document.getElementById('closeButton');
+function closeDialog() {
+  dialog.style.display = 'none';
+}
+// Add event listener to close button
+closeButton.addEventListener('click', closeDialog);
+        function fireToggleSwitch() {
+          if ($('#fire').prop('checked')) {
+          // console.log("dfffsafasa",$('input[type="checkbox"]').prop('checked'))
+            $.ajax({
+              url: "/changeFireFilePath",
+              type: "POST",
+              data: {
+                int_prop: 1 
+              }
+            });
+            dialogTitle.innerText = 'Urgent Notice!';
+            dialogText.innerText = 'Fire detected in Data Center Room! \nBackup in progress, system shutdown initiated, and data transfer to alternate location underway. \nTake immediate precautions.';
+            dialog.style.display = 'block';
+          } else {
+            $.ajax({
+              url: "/changeFireFilePath",
+              type: "POST",
+              data: {
+                int_prop: 0 
+              }
+            });
+             dialog.style.display = 'none';
+          }
+        };
+        function stormToggleSwitch() {
+          if ($('#storm').prop('checked')) {
+          // console.log("dfffsafasa",$('input[type="checkbox"]').prop('checked'))
+            $.ajax({
+              url: "/changeWeatherFilePath",
+              type: "POST",
+              data: {
+                int_prop: 1 
+              }
+            });
+            dialogTitle.innerText = 'Urgent Notice!';
+            dialogText.innerText = 'Weather conditions have changed, causing atmospheric disruptions near the data center. \nBackup in progress, system shutdown initiated, and data transfer to alternate location underway. \nTake immediate precautions.';
+            dialog.style.display = 'block';
+          } else {
+            $.ajax({
+              url: "/changeWeatherFilePath",
+              type: "POST",
+              data: {
+                int_prop: 0 
+              }
+            });
+             dialog.style.display = 'none';
+          }
+        };
+        function requestData() {
+            // Ajax call to get the Data from Flask
+            var requests = $.get('/data');
+
+            var tm = requests.done(function(result) {
+                var series = chart.series[0],
+                shift = series.data.length > 1000;
+
+                // add the point
+                chart.series[0].addPoint({
+                x: result[0],
+                y: result[4]
+                }, true, shift);
+                chart.series[1].addPoint({
+                x: result[0],
+                y: result[5]
+                }, true, shift);
+                chart.series[2].addPoint({
+                x: result[0],
+                y: result[6]*-.085
+                }, true, shift);
+                chart.series[3].addPoint({
+                x: result[0],
+                y: result[7]
+                }, true, shift);
+                chart.series[4].addPoint({
+                x: result[0],
+                y: result[8]
+                }, true, shift);
+                chart.series[5].addPoint({
+                x: result[0],
+                y: result[9]
+                }, true, shift);
+
+                // call it again after twenty second
+                setTimeout(requestData, 6000);
+            });
+        var tmaa = requests.done(function(result) {
+            var series = chart2.series[0],
+            shift = series.data.length > 1000;
+
+            // add the point
+            chart2.series[0].addPoint({
+            x: result[0],
+            y: result[2]
+            }, true, shift);
+
+            // call it again after twenty second
+            setTimeout(requestData, 6000);
+        });
+        var tma = requests.done(function(result) {
+        var series = chart3.series[0],
+          shift = series.data.length > 1000;
+
+        // add the point
+        
+        chart3.series[0].addPoint({
+          x: result[0],
+          y: result[1]
+        }, true, shift);
+        chart3.series[1].addPoint({
+          x: result[0],
+          y: result[3]
+        }, true, shift);
+
+
+
+        // call it again after twenty second
+        // setTimeout(requestData, 60000);
+        setTimeout(requestData, 6000);
+      });
+
+      var fire = requests.done(function(result) {
+        // console.log(result[10]* -10 ," ",result[11] * -10," ",result[12] /10," ",result[13] , $('#fire').prop('checked'))
+        var isChecked = $('#fire').prop('checked');
+        var series = chart4.series[0],
+          shift = series.data.length > 1000;
+
+        // add the point
+        chart4.series[0].addPoint({
+          x: result[0],
+          y: isChecked ? result[10] * 10 : result[10] * -10
+        }, true, shift);
+        chart4.series[1].addPoint({
+          x: result[0],
+          y: isChecked ? result[11] * 10 : result[11] * -10
+        }, true, shift);
+        chart4.series[2].addPoint({
+          x: result[0],
+          y: isChecked ? result[12] : result[12] / 10
+        }, true, shift);
+        chart4.series[3].addPoint({
+          x: result[0],
+          y: isChecked ? result[13] : result[13] > 500 ? result[13] / 10 : result[13] 
+        }, true, shift);
+
+        setTimeout(requestData, 6000);
+      });
+      var storm = requests.done(function(result) {
+        // console.log(result[10]* -10 ," ",result[11] * -10," ",result[12] /10," ",result[13] , $('#fire').prop('checked'))
+        var isChecked = $('#storm').prop('checked');
+        var series = chart5.series[0],
+          shift = series.data.length > 1000;
+
+        // add the point
+        chart5.series[0].addPoint({
+          x: result[0],
+          y: isChecked ? result[14]* 17 : result[14]
+        }, true, shift);
+        chart5.series[1].addPoint({
+          x: result[0],
+          y: isChecked ? result[15]* 25 : result[15]
+        }, true, shift);
+        chart5.series[2].addPoint({
+          x: result[0],
+          y: isChecked ? result[16]* 8 : result[16]
+        }, true, shift);
+        chart5.series[3].addPoint({
+          x: result[0],
+          y: isChecked ? result[17] * 200 : result[17]
+        }, true, shift);
+        chart5.series[4].addPoint({
+          x: result[0],
+          y: isChecked ? result[18] * 10: result[18]
+        }, true, shift);
+
+        setTimeout(requestData, 6000);
+      });
+    
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            chart = Highcharts.chart('chart-container1',{
+                chart: {
+                renderTo: 'graph1',
+                defaultSeriesType: 'spline',
+                events: {
+                    load: requestData
+                }
+                },
+                title: {
+                text: 'Real time Longitudinal and Latitudinal readings for Earthquake Prediction'
+                },
+                xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 50,
+                // maxZoom: 30 * 10000
+                maxZoom: 20 * 1000
+                },
+                yAxis: {
+                minPadding: 0.2,
+                maxPadding: 0.2,
+                title: {
+                    text: 'Value',
+                    margin: 80
+                }
+                },
+                series: [{
+                name: 'Accelorometer X',
+                data: [], 
+                shadow: true,
+                lineWidth: 3 // Increase the line width
+                }, {
+                name: 'Accelorometer Y',
+                data: [], 
+                shadow: true,
+                lineWidth: 3 // Increase the line width
+                }, {
+                name: 'Accelorometer Z',
+                data: [], 
+                shadow: true,
+                lineWidth: 3 // Increase the line width
+                }, {
+                name: 'Gyroscope X',
+                data: [], 
+                shadow: true,
+                lineWidth: 3 // Increase the line width
+                }, {
+                name: 'Gyroscope Y',
+                data: [], 
+                shadow: true,
+                lineWidth: 3 // Increase the line width
+                }, {
+                name: 'Gyroscope Z',
+                data: [], 
+                shadow: true,
+                lineWidth: 3 // Increase the line width
+                }, ]
+            });
+            chart2 = new Highcharts.Chart('chart-container2',{
+        chart: {
+          renderTo: 'graph2',
+          defaultSeriesType: 'spline',
+          events: {
+            load: requestData
+          }
+        },
+        title: {
+          text: 'Earthquake Depth Frequency'
+        },
+        xAxis: {
+          type: 'datetime',
+          tickPixelInterval: 50,
+          // maxZoom: 30 * 10000
+          maxZoom: 20 * 1000
+        },
+        yAxis: {
+          minPadding: 0.2,
+          maxPadding: 0.2,
+          tickInterval: 0.5,
+          title: {
+            text: 'Value',
+            margin: 80
+          }
+        },
+        series: [{
+          name: 'Depth',
+          data: [],
+            shadow: true,
+            lineWidth: 3 
+        }]
+      });
+            chart3 = new Highcharts.Chart('chart-container3',{
+        chart: {
+          renderTo: 'graph3',
+          defaultSeriesType: 'spline',
+          events: {
+            load: requestData
+          }
+        },
+        title: {
+          text: 'Earthquake Magnitude'
+        },
+        xAxis: {
+          type: 'datetime',
+          tickPixelInterval: 50,
+          // maxZoom: 30 * 10000
+          maxZoom: 20 * 1000
+        },
+        yAxis: {
+          minPadding: 0.2,
+          maxPadding: 0.2,
+          title: {
+            text: 'Value',
+            margin: 80
+          }
+        },
+        series: [{
+          name: 'Magnitude',
+          data: [],
+            shadow: true,
+            lineWidth: 3 
+        }, {
+          name: 'Gap',
+          data: [],
+            shadow: true,
+            lineWidth: 3 
+        }]
+      });
+            chart4 = new Highcharts.Chart('chart-container4',{
+              chart: {
+                renderTo: 'graph4',
+                defaultSeriesType: 'spline',
+                events: {
+                  load: requestData
+                }
+              },
+              title: {
+                text: 'In-bound Atmospheric Conditions For Fire/Smoke Detection'
+              },
+              xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 50,
+                // maxZoom: 30 * 10000
+                maxZoom: 20 * 1000
+              },
+              yAxis: {
+                minPadding: 0.2,
+                maxPadding: 0.2,
+                title: {
+                  text: 'Value',
+                  margin: 80
+                }
+              },
+              series: [{
+                name: 'Temperature[C]',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'Humidity[%]',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'Pressure[hPa]',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'CO2',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }]
+            });
+            chart5 = new Highcharts.Chart('chart-container5',{
+              chart: {
+                renderTo: 'graph4',
+                defaultSeriesType: 'spline',
+                events: {
+                  load: requestData
+                }
+              },
+              title: {
+                text: 'Out-Bound Atmospheric Conditions'
+              },
+              xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 50,
+                // maxZoom: 30 * 10000
+                maxZoom: 20 * 1000
+              },
+              yAxis: {
+                minPadding: 0.2,
+                maxPadding: 0.2,
+                title: {
+                  text: 'Value',
+                  margin: 80
+                }
+              },
+              series: [{
+                name: 'Humidity[%]',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'Temperature[F]',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'Pressure[hPa]',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'Wind Speed',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }, {
+                name: 'Wind Direction',
+                data: [],
+                shadow: true,
+                lineWidth: 3 
+              }]
+            });
+          
+          });
+    </script>
+
+</body>
+
+</html>

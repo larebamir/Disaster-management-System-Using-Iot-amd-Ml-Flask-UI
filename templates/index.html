@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Flask App</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+  <!-- Bootstrap Switch CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap2/bootstrap-switch.min.css">
+
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+  <!-- Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+  <!-- Bootstrap Switch JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
+
+  <!-- Highcharts -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts-more.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 30px;
+      height: 17px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .3s;
+      transition: .3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 13px;
+      width: 13px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    input:checked+.slider {
+      background-color: #2196F3;
+    }
+
+    input:focus+.slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked+.slider:before {
+      -webkit-transform: translateX(13px);
+      -ms-transform: translateX(13px);
+      transform: translateX(13px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+      border-radius: 17px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+
+    .card {
+      margin-bottom: 20px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="jumbotron"></div>
+  <br>
+  <br>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-3">
+        <div class="row justify-content-end">
+          <div class="col">
+            <label class="switch">
+              <input type="checkbox" onclick="toggleSwitch()">
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        <div class="container-fluid" id="data-container">
+          <div class="card">
+            <div class="card-body">
+              <div id="graph1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-9">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col">
+              <div class="container-fluid" id="data-container2">
+                <div class="card">
+                  <div class="card-body">
+                    <div id="graph2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="container-fluid" id="data-container3">
+                <div class="card">
+                  <div class="card-body">
+                    <div id="graph3"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var chart;
+
+    function toggleSwitch() {
+      // Add your code here to handle the switch toggle event
+      if ($('input[type="checkbox"]').prop('checked')) {
+        // Switch is ON
+        $.ajax({
+          url: "/changeEqFile",
+          type: "POST",
+          data: {
+            int_prop: 1 // Provide the integer property value here
+          }
+        });
+        console.log("Switch is ON");
+        // Add your logic for the ON state
+      } else {
+        // Switch is OFF
+        $.ajax({
+          url: "/changeEqFile",
+          type: "POST",
+          data: {
+            int_prop: 0 // Provide the integer property value here
+          }
+        });
+        console.log("Switch is OFF");
+        // Add your logic for the OFF state
+      }
+    }
+
+    function requestData() {
+      // Ajax call to get the Data from Flask
+      var requests = $.get('/data');
+
+      var tm = requests.done(function(result) {
+        var series = chart.series[0],
+          shift = series.data.length > 500;
+
+        // add the point
+        chart.series[0].addPoint({
+          x: result[0],
+          y: result[1]
+        }, true, shift);
+        chart.series[1].addPoint({
+          x: result[0],
+          y: result[2]
+        }, true, shift);
+        chart.series[2].addPoint({
+          x: result[0],
+          y: result[3]
+        }, true, shift);
+        chart.series[3].addPoint({
+          x: result[0],
+          y: result[4]
+        }, true, shift);
+        chart.series[4].addPoint({
+          x: result[0],
+          y: result[5]
+        }, true, shift);
+        chart.series[5].addPoint({
+          x: result[0],
+          y: result[6]
+        }, true, shift);
+        chart.series[6].addPoint({
+          x: result[0],
+          y: result[7]
+        }, true, shift);
+        chart.series[7].addPoint({
+          x: result[0],
+          y: result[8]
+        }, true, shift);
+        chart.series[8].addPoint({
+          x: result[0],
+          y: result[9]
+        }, true, shift);
+
+        // call it again after twenty second
+        setTimeout(requestData, 2000);
+      });
+
+      var tmaa = requests.done(function(result) {
+        var series = chart2.series[0],
+          shift = series.data.length > 100;
+
+        // add the point
+        chart2.series[0].addPoint({
+          x: result[0],
+          y: result[2]
+        }, true, shift);
+
+        // call it again after twenty second
+        setTimeout(requestData, 2000);
+      });
+
+      var tma = requests.done(function(result) {
+        var series = chart3.series[0],
+          shift = series.data.length > 100;
+
+        // add the point
+        chart3.series[0].addPoint({
+          x: result[0],
+          y: result[1]
+        }, true, shift);
+        chart3.series[1].addPoint({
+          x: result[0],
+          y: result[3]
+        }, true, shift);
+
+
+        // call it again after twenty second
+        // setTimeout(requestData, 60000);
+        setTimeout(requestData, 2000);
+      });
+    }
+
+    $(document).ready(function() {
+      var containerHeight = 400; // Adjust the height as per your requirement
+
+      chart = new Highcharts.Chart({
+        chart: {
+          renderTo: 'graph1',
+          defaultSeriesType: 'spline',
+          events: {
+            load: requestData
+          }
+        },
+        title: {
+          text: 'Live Earthquake Data'
+        },
+        xAxis: {
+          type: 'datetime',
+          tickPixelInterval: 50,
+          // maxZoom: 30 * 10000
+          maxZoom: 20 * 1000
+        },
+        yAxis: {
+          minPadding: 0.2,
+          maxPadding: 0.2,
+          title: {
+            text: 'Value',
+            margin: 80
+          }
+        },
+        series: [{
+          name: 'Magnitude',
+          data: []
+        }, {
+          name: 'Depth',
+          data: []
+        }, {
+          name: 'Gap',
+          data: []
+        }, {
+          name: 'Accelorometer X',
+          data: []
+        }, {
+          name: 'Accelorometer Y',
+          data: []
+        }, {
+          name: 'Accelorometer Z',
+          data: []
+        }, {
+          name: 'Gyroscope X',
+          data: []
+        }, {
+          name: 'Gyroscope Y',
+          data: []
+        }, {
+          name: 'Gyroscope Z',
+          data: []
+        }, ]
+      });
+
+      chart2 = new Highcharts.Chart({
+        chart: {
+          renderTo: 'graph2',
+          defaultSeriesType: 'spline',
+          events: {
+            load: requestData
+          }
+        },
+        title: {
+          text: 'Live Earthquake Data'
+        },
+        xAxis: {
+          type: 'datetime',
+          tickPixelInterval: 150,
+          // maxZoom: 30 * 10000
+          maxZoom: 20 * 1000
+        },
+        yAxis: {
+          minPadding: 0.2,
+          maxPadding: 0.2,
+          title: {
+            text: 'Value',
+            margin: 80
+          }
+        },
+        series: [{
+          name: 'Depth',
+          data: []
+        }]
+      });
+      chart3 = new Highcharts.Chart({
+        chart: {
+          renderTo: 'graph3',
+          defaultSeriesType: 'spline',
+          events: {
+            load: requestData
+          }
+        },
+        title: {
+          text: 'Live Earthquake Data'
+        },
+        xAxis: {
+          type: 'datetime',
+          tickPixelInterval: 150,
+          // maxZoom: 30 * 10000
+          maxZoom: 20 * 1000
+        },
+        yAxis: {
+          minPadding: 0.2,
+          maxPadding: 0.2,
+          title: {
+            text: 'Value',
+            margin: 80
+          }
+        },
+        series: [{
+          name: 'Magnitude',
+          data: []
+        }, {
+          name: 'Accelorometer Z',
+          data: []
+        }]
+      });
+    });
+  </script>
+
+</body>
+
+</html>
